@@ -2,6 +2,7 @@
 #include <time.h>
 #include <ncurses.h>
 #include "map.cpp" // 맵 배열 및 함수 사용 위해 인클루드
+//#include "board.cpp"//스코어보드 함수 사용위해 인클루드  했지만 사실 다른 파일에 굳이 없어도될거같기도하고...
 using namespace std;
 
 /////////////////////////////전역변수
@@ -9,8 +10,38 @@ int snSize=0;
 int growItems=0;
 int poisonItems=0;
 int gates=0;
-/////////////////////////////////
+/////////////////////////////////서브윈도우
+WINDOW *state_board;
+WINDOW *mission_board;
+//////////////////////////////
 
+void State_board(){//스코어 보드 프린트함수
+
+  //WINDOW *state_board=newwin(7, 40, 3, 53);
+
+  wborder(state_board,'|','|','-','-','+','+','+','+');
+
+  mvwprintw(state_board , 1, 1, "State board");
+  mvwprintw(state_board , 2, 1, "current length / max length : %d / %d",snSize,20);
+  mvwprintw(state_board , 3, 1, "growthItems : %d",growItems);
+  mvwprintw(state_board , 4, 1, "poisonItems : %d",poisonItems);
+  mvwprintw(state_board , 5, 1, "gates : %d",gates);
+  mvwprintw(state_board , 5, 1, "time : %d",0);
+
+  //wborder(state_board,"\u2500","\u2500","\u2502","\u2502","\u250C","\u2510","\u2514","\u2518");
+  wrefresh(state_board);
+}
+void Mission_board(){//미션보드 미구현
+
+
+  wborder(mission_board,'|','|','-','-','+','+','+','+');
+
+  mvwprintw(mission_board , 1, 1, "Mission_board");
+  mvwprintw(mission_board, 2, 1, "mission 1");
+  mvwprintw(mission_board, 3, 1, "mission 2");
+
+  wrefresh(mission_board);
+}
 
 struct position{int x, y;};
 class Element{
@@ -146,6 +177,9 @@ void run(Snake& s){
     s.isGate();//////////////////////////////////
 
     s.printsnake();
+    State_board();
+    Mission_board();
+    
     s.mvSpan = time(NULL);
     refresh();
   }
@@ -162,6 +196,10 @@ int main()
   start_color();
   init_pair(1, COLOR_WHITE, COLOR_BLACK); // 글씨색, 배경색
   init_pair(2, COLOR_GREEN, COLOR_BLACK);
+
+  state_board=newwin(7, 40, 3, 53);//서브윈도우 위치설정
+  mission_board=newwin(7, 40, 10, 53);
+
 
   keypad(stdscr, TRUE);
   noecho();
