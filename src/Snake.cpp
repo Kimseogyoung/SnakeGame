@@ -1,6 +1,7 @@
 #include <iostream>
 #include <time.h>
 #include <ncurses.h>
+#include "map.cpp" // 맵 배열 및 함수 사용 위해 인클루드
 using namespace std;
 
 struct position{int x, y;};
@@ -37,27 +38,47 @@ public:
 
   // 화면에 스네이크 출력
   void printsnake(){
-    clear();
     Element* p=head;
     while(p){
-      // mvprintw(i,j,"\u2B1C")
-      mvprintw(p->x,p->y,(p==head ? "\u2B1B" : "\u2B1C"));
+      map_array[p->x][p->y] = (p==head?3:4); // snake head = 3, snake body = 4로 배열값 변경
       p=p->next;
     }
+    map();
   }
 
-  // 스네이크 몸길이 1증가
+  // 스네이크 몸길이 1증가(머리부분)
   void addbody(){
-      Element* p=head;
-      while(p->next){
-        p=p->next;
-      }
-      Element* tmp = new Element( p->x - offset[dir].x, p->y - offset[dir].y);
-      p->next=tmp;
-      size++;
-      printsnake();
+    Element* p=head;
+    while(p->next){
+      p=p->next;
+    }
+    Element* tmp = new Element( p->x - offset[dir].x, p->y - offset[dir].y);
+    p->next=tmp;
+    size++;
+
+  }
+// 스네이크 몸길이 1 감소 (꼬리부)
+  void removebody(){
+    Element* p, *q;
+    p = head;
+    while (p->next){
+      q = p;
+      p = p->next;
+    }
+    q->next = 0;
+    map_array[p->x][p->y] = 0;// 없어지는 body의 위치를 배열에서 0으로 변경
+    delete p;// 맨 끝 삭제
   }
 
+  bool isItem(){
+    if(map_array[head->x][head->y]==5) return true;
+    else return false;
+
+  }
+  bool isGate(){
+    if(map_array[head->x][head->y]==6) return true;
+    else return false;
+  }
   // 스네이크 head의 방향을 얻어오는 함수
   int getdir(){return dir;}
 
@@ -71,6 +92,7 @@ public:
       p = p->next;
     }
     q->next = 0;
+    map_array[p->x][p->y] = 0; // 없어지는 body의 위치를 배열에서 0으로 변경
     delete p;   // 맨 끝 삭제
     tmp->next = head;
     head = tmp;   // 새 몸 추가 및 head 변경
@@ -96,6 +118,8 @@ void run(Snake& s){
       else if (key == KEY_DOWN) dir = 3;
     }
     s.move(dir);
+    if(s.isItem()) s.addbody();
+    if(s.isGate()) s.removebody();
     s.printsnake();
     s.mvSpan = time(NULL);
     refresh();
@@ -104,13 +128,19 @@ void run(Snake& s){
 
 int main()
 {
+  Snake snake;
+
+  initscr(); //main window start
   setlocale(LC_ALL, "");
-  initscr();
+  resize_term(200, 400);
+  mvprintw(2,15,"Snake Game"); // y,x
+  start_color();
+  init_pair(1, COLOR_WHITE, COLOR_BLACK); // 글씨색, 배경색
+  init_pair(2, COLOR_GREEN, COLOR_BLACK);
+
   keypad(stdscr, TRUE);
   noecho();
   curs_set(0);
-  Snake snake;
-  //snake.addbody();
   run(snake);
 
   nodelay(stdscr, FALSE);
