@@ -4,6 +4,14 @@
 #include "map.cpp" // 맵 배열 및 함수 사용 위해 인클루드
 using namespace std;
 
+/////////////////////////////전역변수
+int snSize=0;
+int growItems=0;
+int poisonItems=0;
+int gates=0;
+/////////////////////////////////
+
+
 struct position{int x, y;};
 class Element{
 private:
@@ -20,13 +28,14 @@ private:
   Element* head;   // SLL으로 몸체 구현
   time_t mvSpan;
   int dir;   // head의 방향
-  int size;
   position offset[4];   // 이동에 이용할 이동좌표
+
+
 public:
   Snake(){
     head = new Element(10, 10);   // 초기 생성 위치
     dir = 0;
-    size = 1;
+    snSize = 1;
     mvSpan = time(NULL);
     offset[0].x = -1;   offset[0].y = 0;   // UP
     offset[1].x = 0;   offset[1].y = 1;   // RIGHT
@@ -35,7 +44,6 @@ public:
     addbody();
     addbody();
   }
-
   // 화면에 스네이크 출력
   void printsnake(){
     Element* p=head;
@@ -46,7 +54,7 @@ public:
     map();
   }
 
-  // 스네이크 몸길이 1증가(머리부분)
+  // 스네이크 몸길이 1증가
   void addbody(){
     Element* p=head;
     while(p->next){
@@ -54,7 +62,7 @@ public:
     }
     Element* tmp = new Element( p->x - offset[dir].x, p->y - offset[dir].y);
     p->next=tmp;
-    size++;
+    snSize++;
 
   }
 // 스네이크 몸길이 1 감소 (꼬리부)
@@ -68,16 +76,29 @@ public:
     q->next = 0;
     map_array[p->x][p->y] = 0;// 없어지는 body의 위치를 배열에서 0으로 변경
     delete p;// 맨 끝 삭제
+    snSize--;
   }
+  void isBody(){//헤드가 바디에 접촉 //////////////////////////////////아직 미구현
+    if(map_array[head->x][head->y]==4){
 
-  bool isItem(){
-    if(map_array[head->x][head->y]==5) return true;
-    else return false;
-
+    }
   }
-  bool isGate(){
-    if(map_array[head->x][head->y]==6) return true;
-    else return false;
+  void isGrowthItem(){//헤드가 growthItem접촉
+    if(map_array[head->x][head->y]==5){
+      addbody();
+      growItems++;
+    }
+  }
+  void isPoisonItem(){//헤드가 poisonitem접촉
+    if(map_array[head->x][head->y]==6){
+      removebody();
+      poisonItems++;
+    }
+  }
+  bool isGate(){//헤드가 gate접촉
+    if(map_array[head->x][head->y]==7) {
+      //미구현
+    }
   }
   // 스네이크 head의 방향을 얻어오는 함수
   int getdir(){return dir;}
@@ -110,7 +131,7 @@ void run(Snake& s){
   int dir = s.dir;
   nodelay(stdscr, TRUE);
   while (terminate){
-    while (time(NULL) - s.mvSpan < 0.5){
+    while (time(NULL) - s.mvSpan < 0.05){
       key = getch();
       if (key == KEY_UP) dir = 0;
       else if (key == KEY_RIGHT) dir = 1;
@@ -118,8 +139,12 @@ void run(Snake& s){
       else if (key == KEY_DOWN) dir = 3;
     }
     s.move(dir);
-    if(s.isItem()) s.addbody();
-    if(s.isGate()) s.removebody();
+
+    s.isBody();/////////////////////////
+    s.isGrowthItem();
+    s.isPoisonItem();
+    s.isGate();//////////////////////////////////
+
     s.printsnake();
     s.mvSpan = time(NULL);
     refresh();
