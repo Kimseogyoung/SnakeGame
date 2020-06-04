@@ -38,6 +38,8 @@ void map(){
       else if (map_array[r][c] == 1) {mvwaddch(gamewin,r,c,'|');} // wall
       else if (map_array[r][c] == 3) {mvwaddch(gamewin,r,c,'@');} // snake head
       else if (map_array[r][c] == 4) {mvwaddch(gamewin,r,c,'#');} // snake body
+      else if (map_array[r][c] == 5) {mvwaddch(gamewin,r,c,'G');} // Grow item
+      else if (map_array[r][c] == 6) {mvwaddch(gamewin,r,c,'P');} // Poison item
       else {mvwaddch(gamewin,r,c,' ');} // space
     }
   }

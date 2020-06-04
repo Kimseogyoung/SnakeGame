@@ -2,6 +2,9 @@
 #include <time.h>
 #include <ncurses.h>
 #include "map.cpp" // 맵 배열 및 함수 사용 위해 인클루드
+#include <random>
+#include <unistd.h>
+#include <thread>
 using namespace std;
 
 struct position{int x, y;};
@@ -82,11 +85,92 @@ public:
 friend void run(Snake& s);
 };
 
+//아이템 개수를 판단하는 함수 - 한번에 나올 수 있는 아이템의 수는 3개 이하
+int itemCnt(){
+  int itemcnt = 0;
+  for(int r=1; r < 20; r++){
+    for(int c=1; c < 39; c++){
+      if (map_array[r][c] == 5 || map_array[r][c] == 6) itemcnt++;
+    }
+  }
+  return itemcnt;
+}
+
+// 아이템 생성 및 소멸 함수
+void makeGrowItem(){
+  bool terminate = true;
+
+  random_device rd; // 시드값을 얻음 - srand보다 완벽한 무작위
+  mt19937 gen(rd()); // random_device 난수 생성 엔진 초기화
+  uniform_int_distribution<int> b(3,7); // 첫 아이템 출현 시간 (3초~7초) 랜덤
+  sleep(b(gen));
+
+  while(terminate){
+    int cnt = itemCnt();
+    if(cnt < 3){
+      random_device rd; // 시드값을 얻음 - srand보다 완벽한 무작위
+      mt19937 gen(rd()); // random_device 난수 생성 엔진 초기화
+
+      uniform_int_distribution<int> r(1, 19); // wall 아닌 부분에서 x좌표 선택
+      uniform_int_distribution<int> c(1, 38); // wall 아닌 부분에서 y좌표 선택
+
+      int x = r(gen);
+      int y = c(gen);
+
+      if ((map_array[x][y] != 3 || map_array[x][y] == 4) || (map_array[x][y] != 6 || map_array[x][y] != 5)){
+        map_array[x][y] = 5;
+      }
+
+      uniform_int_distribution<int> p(11, 15); // 아이템 출현 유지 기간 (11초~15초) 랜덤
+      sleep(p(gen));
+      map_array[x][y] = 0;
+
+      sleep(b(gen)); // 다음 아이템까지 쉬는 시간(3초 ~ 7초) 랜덤적으로
+    }
+    else continue;
+  }
+}
+
+void makePoisonItem(){
+  bool terminate = true;
+
+  random_device rd; // 시드값을 얻음 - srand보다 완벽한 무작위
+  mt19937 gen(rd()); // random_device 난수 생성 엔진 초기화
+  uniform_int_distribution<int> b(3,7);
+  sleep(b(gen));
+
+  while(terminate){
+    int cnt = itemCnt();;
+    if(cnt < 3){
+
+      uniform_int_distribution<int> r(1, 19); // wall 아닌 부분에서 x좌표 선택
+      uniform_int_distribution<int> c(1, 38); // wall 아닌 부분에서 y좌표 선택
+
+      int x = r(gen);
+      int y = c(gen);
+
+      if ((map_array[x][y] != 3 || map_array[x][y] == 4) || (map_array[x][y] != 6 || map_array[x][y] != 5)){
+        map_array[x][y] = 6;
+      }
+      uniform_int_distribution<int> p(11, 15); // 아이템 출현 유지 기간 (11초~15초) 랜덤
+      sleep(p(gen));
+      map_array[x][y] = 0;
+
+      sleep(b(gen));
+    }
+    else continue;
+  }
+}
+
 // nodelay()함수 통해 getch() 딜레이 없앰 + time(NULL) 이용해 시간 제한
 void run(Snake& s){
   bool terminate = true;
   int key;
   int dir = s.dir;
+  thread t1(makeGrowItem);
+  thread t2(makePoisonItem);
+  thread t3(makeGrowItem);
+  thread t4(makePoisonItem);
   nodelay(stdscr, TRUE);
   while (terminate){
     while (time(NULL) - s.mvSpan < 0.5){
@@ -123,5 +207,6 @@ int main()
   nodelay(stdscr, FALSE);
   getch();
   endwin();
+
   return 0;
 }
