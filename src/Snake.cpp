@@ -17,8 +17,10 @@ int snSize=0;
 int growItems=0;
 int poisonItems=0;
 int gates=0;
-int maxR = 40;
-int maxC = 21;
+int maxR = 21;
+int maxC = 40;
+bool go = true;
+
 /////////////////////////////////서브윈도우
 WINDOW *state_board;
 WINDOW *mission_board;
@@ -55,13 +57,16 @@ void Mission_board(){//미션보드 미구현
 }
 
 struct position{int r, c;};
+///////////////////////////////////////////////////////////////////////////
+position g1;
+position g2;
+///////////////////////////////////////////////////////////////////////////
 int isEdge(position v){
-  mvprintw( 29, 70, " %d %d",v.r,v.c);
-  int result=0;
-  if ((v.r == 0) && (v.c < maxC)) result= 1;   // UPPER EDGE
-  else if ((v.r < maxR) && (v.c == maxC-1)) result=2;   // RIGHT EDGE
-  else if ((v.r == maxR-1) && (v.c < maxC)) result=3;   // LOWER EDGE
-  else if ((v.r < maxR) && (v.c == 0)) result=4;// LEFT EDGE
+  int result = 0;
+  if ((v.r == 0) && (v.c < maxC)) result = 1;   // UPPER EDGE
+  else if ((v.r < maxR) && (v.c == maxC-1)) result = 2;   // RIGHT EDGE
+  else if ((v.r == maxR-1) && (v.c < maxC)) result = 3;   // LOWER EDGE
+  else if ((v.r < maxR) && (v.c == 0)) result = 4;// LEFT EDGE
   else {
     mvprintw( 30, 70, "NO");
     result= 0;
@@ -84,8 +89,6 @@ private:
   clock_t mvSpan;
   int dir;   // head의 방향
   position offset[4];   // 이동에 이용할 이동좌표
-  position g1;
-  position g2;
 
 
 public:
@@ -99,7 +102,7 @@ public:
     offset[2].r = 1;   offset[2].c = 0;   // DOWN
     offset[3].r = 0;   offset[3].c = -1;   // LEFT
     addbody();
-    //addbody();
+    addbody();
     g1.r = 0;
     g1.c = 30;
     g2.r = 15;
@@ -139,11 +142,16 @@ public:
     delete p;// 맨 끝 삭제
     snSize--;
   }
-  // void isBody(){//헤드가 바디에 접촉 //////////////////////////////////아직 미구현
-  //   if(map_array[head->r][head->c]==4){
-  //
-  //   }
-  // }
+  void isBody(){//헤드가 바디에 접촉 //////////////////////////////////아직 미구현
+    if(map_array[head->r][head->c]==4){
+      go = false;
+    }
+  }
+  void isWall(){//헤드가 바디에 접촉 //////////////////////////////////아직 미구현
+    if(map_array[head->r][head->c]==1){
+      go = false;
+    }
+  }
   void isGrowthItem(){//헤드가 growthItem접촉
     if(map_array[head->r][head->c]==5){
       addbody();
@@ -159,8 +167,8 @@ public:
   bool isGate(){//헤드가 gate접촉
     if(map_array[head->r][head->c]==7) {
       //미구현
-      if (head->r == 15) passGate(g1);
-      else passGate(g2);
+      if (head->r == g1.r) passGate(g2);
+      else passGate(g1);
       return true;
     }
     return false;
@@ -177,8 +185,6 @@ public:
       q = p;
       p = p->next;
     }
-    //thread t2(makePoisonItem);
-    //thread t3(makeGrowItem);
 
     q->next = 0;
     map_array[p->r][p->c] = 0; // 없어지는 body의 위치를 배열에서 0으로 변경
@@ -191,29 +197,24 @@ public:
   void passGate(position to){
     int next_dir[4] = {dir, (dir+1) % 4, (dir+2) % 4, (dir+6) % 4};
     int idx = 0;
-    mvwprintw(mission_board, 5, 1, "%d",isEdge(to));
     if (isEdge(to) > 0){
       switch (isEdge(to)){
       case 1:
-        mvwprintw(mission_board, 3, 1, "isE  1");
         head->r = to.r + 1;
         head->c = to.c;
         dir = 2;
         break;
       case 2:
-      mvwprintw(mission_board, 4, 1, "isE  2");
         head->r = to.r;
         head->c = to.c -1;
         dir = 3;
         break;
       case 3:
-      mvwprintw(mission_board, 5, 1, "isE  3");
         head->r = to.r - 1;
         head->c = to.c;
         dir = 0;
         break;
       case 4:
-      mvwprintw(mission_board, 4, 1, "isE  4");
         head->r = to.r;
         head->c = to.c + 1;
         dir = 1;
@@ -221,9 +222,10 @@ public:
       }
     }
     else{
-      while (map_array[offset[next_dir[idx]].r + to.r][offset[next_dir[idx]].c + to.c]) idx++;
+      while (map_array[offset[next_dir[idx]].r + to.r][offset[next_dir[idx]].c + to.c] == 1) idx++;
       head->r = offset[next_dir[idx]].r + to.r;
       head->c = offset[next_dir[idx]].c + to.c;
+      dir = next_dir[idx];
     }
   }
 
@@ -246,14 +248,12 @@ int itemCnt(){
 
 // 아이템 생성 및 소멸 함수
 void makeGrowItem(){
-  bool terminate = true;
-
   random_device rd; // 시드값을 얻음 - srand보다 완벽한 무작위
   mt19937 gen(rd()); // random_device 난수 생성 엔진 초기화
   uniform_int_distribution<int> b(3,7); // 첫 아이템 출현 시간 (3초~7초) 랜덤
   sleep(b(gen));
 
-  while(terminate){
+  while(go){
     int cnt = itemCnt();
     if(cnt < 3){
       random_device rd; // 시드값을 얻음 - srand보다 완벽한 무작위
@@ -280,14 +280,12 @@ void makeGrowItem(){
 }
 
 void makePoisonItem(){
-  bool terminate = true;
-
   random_device rd; // 시드값을 얻음 - srand보다 완벽한 무작위
   mt19937 gen(rd()); // random_device 난수 생성 엔진 초기화
   uniform_int_distribution<int> b(3,7);
   sleep(b(gen));
 
-  while(terminate){
+  while(go){
     int cnt = itemCnt();;
     if(cnt < 3){
 
@@ -310,19 +308,58 @@ void makePoisonItem(){
   }
 }
 
+void makeGate(){
+  random_device rd; // 시드값을 얻음 - srand보다 완벽한 무작위
+  mt19937 gen(rd()); // random_device 난수 생성 엔진 초기화
+  uniform_int_distribution<int> b(7,10);
+  sleep(b(gen));
+
+  while(go){
+    int cnt = itemCnt();;
+    if(cnt < 3){
+
+      uniform_int_distribution<int> r(0, 21); // wall 아닌 부분에서 x좌표 선택
+      uniform_int_distribution<int> c(0, 40); // wall 아닌 부분에서 y좌표 선택
+
+      int x1 = r(gen);
+      int y1 = c(gen);
+      int x2 = r(gen);
+      int y2 = c(gen);
+      if ((x1 == x2) && (y2 == y2)) {x2 = r(gen); y2 = c(gen);}
+
+
+      if ((map_array[x1][y1] != 3 || map_array[x1][y1] == 4) || (map_array[x1][y1] != 6 || map_array[x1][y1] != 5)
+    && (map_array[x2][y2] != 3 || map_array[x2][y2] == 4) || (map_array[x2][y2] != 6 || map_array[x2][y2] != 5)){
+        map_array[x1][y1] = 7; map_array[x2][y2] = 7;
+      }
+      g1.r = x1; g1.c = y1;
+      g2.r = x2; g2.c = y2;
+
+      uniform_int_distribution<int> p(11, 15); // 아이템 출현 유지 기간 (11초~15초) 랜덤
+      sleep(p(gen));
+      map_array[x1][y1] = 0;
+      map_array[x2][y2] = 0;
+
+      sleep(b(gen));
+    }
+    else continue;
+  }
+}
+
 // nodelay()함수 통해 getch() 딜레이 없앰 + time(NULL) 이용해 시간 제한
 void run(Snake& s){
-  bool terminate = true;
   int key;
   int dir = s.dir;
-  //thread t1(makeGrowItem);
-  //thread t2(makePoisonItem);
-  //thread t3(makeGrowItem);
-  //thread t4(makePoisonItem);
+  thread t1(makeGrowItem);
+  thread t2(makePoisonItem);
+  thread t3(makeGrowItem);
+  thread t4(makePoisonItem);
+  thread t5(makeGate);
 
   nodelay(stdscr, TRUE);
-  while (terminate){
-    while (clock() - s.mvSpan < 50000){
+  while (go){
+    dir = s.dir;
+    while (clock() - s.mvSpan < 300000){
       key = getch();
       if (key == KEY_UP) dir = 0;
       else if (key == KEY_RIGHT) dir = 1;
@@ -332,7 +369,7 @@ void run(Snake& s){
     }
     s.move(dir);
 
-    //s.isBody();/////////////////////////
+    s.isBody();/////////////////////////
     s.isGrowthItem();
     s.isPoisonItem();
     s.isGate();//////////////////////////////////
