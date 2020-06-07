@@ -2,16 +2,13 @@
 #include <time.h>
 #include <ncurses.h>
 #include "map.cpp" // 맵 배열 및 함수 사용 위해 인클루드
+#include "mission.cpp" //미션 클래스
 #include <random>
 #include <unistd.h>
 #include <thread>
-//#include "board.cpp"//스코어보드 함수 사용위해 인클루드  했지만 사실 다른 파일에 굳이 없어도될거같기도하고...
+
 using namespace std;
 
-#define UEDGE = 1;
-#define REDGE = 2;
-#define DEDGE = 3;
-#define LEDGE = 4;
 /////////////////////////////전역변수
 int snSize=0;
 int growItems=0;
@@ -25,8 +22,6 @@ bool go = true;
 WINDOW *state_board;
 WINDOW *mission_board;
 //////////////////////////////
-
-
 
 void State_board(){//스코어 보드 프린트함수
 
@@ -44,7 +39,7 @@ void State_board(){//스코어 보드 프린트함수
   //wborder(state_board,"\u2500","\u2500","\u2502","\u2502","\u250C","\u2510","\u2514","\u2518");
   wrefresh(state_board);
 }
-void Mission_board(mission m, mission_result p){//미션보드 미구현
+void Mission_board(mission m, mission_result p){//미션보드
 
 
   wborder(mission_board,'|','|','-','-','+','+','+','+');
@@ -65,16 +60,11 @@ position g1;
 position g2;
 ///////////////////////////////////////////////////////////////////////////
 int isEdge(position v){
-  int result = 0;
-  if ((v.r == 0) && (v.c < maxC)) result = 1;   // UPPER EDGE
-  else if ((v.r < maxR) && (v.c == maxC-1)) result = 2;   // RIGHT EDGE
-  else if ((v.r == maxR-1) && (v.c < maxC)) result = 3;   // LOWER EDGE
-  else if ((v.r < maxR) && (v.c == 0)) result = 4;// LEFT EDGE
-  else {
-    mvprintw( 30, 70, "NO");
-    result= 0;
-  }
-  return result;
+  if ((v.r == 0) && (v.c < maxC)) return 2;   // UPPER EDGE
+  else if ((v.r < maxR) && (v.c == maxC-1)) return 3;   // RIGHT EDGE
+  else if ((v.r == maxR-1) && (v.c < maxC)) return 0;   // LOWER EDGE
+  else if ((v.r < maxR) && (v.c == 0)) return 1;// LEFT EDGE
+  else return 4;
 }
 class Element{
 private:
@@ -104,12 +94,12 @@ public:
     offset[1].r = 0;   offset[1].c = 1;   // RIGHT
     offset[2].r = 1;   offset[2].c = 0;   // DOWN
     offset[3].r = 0;   offset[3].c = -1;   // LEFT
-    addbody();
-    addbody();
     g1.r = 0;
     g1.c = 30;
     g2.r = 15;
     g2.c = 20;
+    addbody();
+    addbody();
   }
   // 화면에 스네이크 출력
   void printsnake(){
@@ -127,10 +117,17 @@ public:
     while(p->next){
       p=p->next;
     }
-    Element* tmp = new Element( p->r - offset[dir].r, p->c - offset[dir].c);
-    p->next=tmp;
-    snSize++;
+    if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 0){
+      Element* tmp = new Element( p->r - offset[dir].r, p->c - offset[dir].c);
+      p->next=tmp;
+      snSize++;
+    }
+    // 몸이 길어지는 부분이 벽이거나 게이트라면 멈추기
+    else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 1 || map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 7) go = false;
 
+    // 몸이 길어지는 부분에 poison 아이템이 있으면
+    else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 6) removebody();
+    else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 5) addbody(); //재귀함수니까 마지막에
   }
 // 스네이크 몸길이 1 감소 (꼬리부)
   void removebody(){
@@ -145,12 +142,11 @@ public:
     delete p;// 맨 끝 삭제
     snSize--;
   }
-  void isBody(){//헤드가 바디에 접촉 //////////////////////////////////아직 미구현
-    if(map_array[head->r][head->c]==4){
-      go = false;
-    }
+  bool isBody(){//헤드가 바디에 접촉
+    if(map_array[head->r][head->c]==4){return true;}
+    return false;
   }
-  void isWall(){//헤드가 바디에 접촉 //////////////////////////////////아직 미구현
+  void isWall(){//헤드가 바디에 접촉
     if(map_array[head->r][head->c]==1){
       go = false;
     }
@@ -169,9 +165,9 @@ public:
   }
   bool isGate(){//헤드가 gate접촉
     if(map_array[head->r][head->c]==7) {
-      //미구현
       if (head->r == g1.r) passGate(g2);
       else passGate(g1);
+      gates++;
       return true;
     }
     return false;
@@ -200,29 +196,11 @@ public:
   void passGate(position to){
     int next_dir[4] = {dir, (dir+1) % 4, (dir+2) % 4, (dir+6) % 4};
     int idx = 0;
-    if (isEdge(to) > 0){
-      switch (isEdge(to)){
-      case 1:
-        head->r = to.r + 1;
-        head->c = to.c;
-        dir = 2;
-        break;
-      case 2:
-        head->r = to.r;
-        head->c = to.c -1;
-        dir = 3;
-        break;
-      case 3:
-        head->r = to.r - 1;
-        head->c = to.c;
-        dir = 0;
-        break;
-      case 4:
-        head->r = to.r;
-        head->c = to.c + 1;
-        dir = 1;
-        break;
-      }
+    if (isEdge(to) < 4){
+      int ndir = isEdge(to);
+      head->r = to.r + offset[ndir].r;
+      head->c = to.c + offset[ndir].c;
+      dir = ndir;
     }
     else{
       while (map_array[offset[next_dir[idx]].r + to.r][offset[next_dir[idx]].c + to.c] == 1) idx++;
@@ -238,7 +216,7 @@ friend void run(Snake& s);
 
 
 
-//아이템 개수를 판단하는 함수 - 한번에 나올 수 있는 아이템의 수는 3개 이하
+// 아이템 개수를 판단하는 함수 - 한번에 나올 수 있는 아이템의 수는 3개 이하
 int itemCnt(){
   int itemcnt = 0;
   for(int r=1; r < 20; r++){
@@ -268,9 +246,7 @@ void makeGrowItem(){
       int x = r(gen);
       int y = c(gen);
 
-      if ((map_array[x][y] != 3 || map_array[x][y] == 4) || (map_array[x][y] != 6 || map_array[x][y] != 5)){
-        map_array[x][y] = 5;
-      }
+      if (!map_array[x][y]) map_array[x][y] = 5;
 
       uniform_int_distribution<int> p(11, 15); // 아이템 출현 유지 기간 (11초~15초) 랜덤
       sleep(p(gen));
@@ -298,9 +274,7 @@ void makePoisonItem(){
       int x = r(gen);
       int y = c(gen);
 
-      if ((map_array[x][y] != 3 || map_array[x][y] == 4) || (map_array[x][y] != 6 || map_array[x][y] != 5)){
-        map_array[x][y] = 6;
-      }
+      if (!map_array[x][y]) map_array[x][y] = 6;
       uniform_int_distribution<int> p(11, 15); // 아이템 출현 유지 기간 (11초~15초) 랜덤
       sleep(p(gen));
       map_array[x][y] = 0;
@@ -314,13 +288,10 @@ void makePoisonItem(){
 void makeGate(){
   random_device rd; // 시드값을 얻음 - srand보다 완벽한 무작위
   mt19937 gen(rd()); // random_device 난수 생성 엔진 초기화
-  uniform_int_distribution<int> b(7,10);
+  uniform_int_distribution<int> b(3,7);
   sleep(b(gen));
 
   while(go){
-    int cnt = itemCnt();;
-    if(cnt < 3){
-
       uniform_int_distribution<int> r(0, 21); // wall 아닌 부분에서 x좌표 선택
       uniform_int_distribution<int> c(0, 40); // wall 아닌 부분에서 y좌표 선택
 
@@ -330,22 +301,24 @@ void makeGate(){
       int y2 = c(gen);
       if ((x1 == x2) && (y2 == y2)) {x2 = r(gen); y2 = c(gen);}
 
+      int prev_g1;
+      int prev_g2;
 
-      if ((map_array[x1][y1] != 3 || map_array[x1][y1] == 4) || (map_array[x1][y1] != 6 || map_array[x1][y1] != 5)
-    && (map_array[x2][y2] != 3 || map_array[x2][y2] == 4) || (map_array[x2][y2] != 6 || map_array[x2][y2] != 5)){
+      if ((map_array[x1][y1] == 0 || map_array[x1][y1] == 1) && (map_array[x2][y2] == 0 || map_array[x2][y2] == 1)){
+        prev_g1 = map_array[x1][y1];
+        prev_g2 = map_array[x2][y2];
         map_array[x1][y1] = 7; map_array[x2][y2] = 7;
       }
       g1.r = x1; g1.c = y1;
       g2.r = x2; g2.c = y2;
 
-      uniform_int_distribution<int> p(11, 15); // 아이템 출현 유지 기간 (11초~15초) 랜덤
-      sleep(p(gen));
-      map_array[x1][y1] = 0;
-      map_array[x2][y2] = 0;
+      // uniform_int_distribution<int> p(5, 7); // 아이템 출현 유지 기간 (11초~15초) 랜덤
+      // sleep(p(gen));
+      sleep(7);
+      map_array[x1][y1] = prev_g1;
+      map_array[x2][y2] = prev_g2;
 
       sleep(b(gen));
-    }
-    else continue;
   }
 }
 
@@ -359,10 +332,10 @@ void run(Snake& s){
   thread t4(makePoisonItem);
   thread t5(makeGate);
 
-  mission m(1);
+
+  mission m(1);//미션 초기화         &&&&&&&&&&&&&&&&후에 스테이지전환 기능 추가 필요
   m.set_mission();
   mission_result ms={0,0,0,0};
-
 
   nodelay(stdscr, TRUE);
   while (go){
@@ -377,13 +350,14 @@ void run(Snake& s){
     }
     s.move(dir);
 
-    s.isBody();/////////////////////////
+    // s.isBody() 임시로 bool return
+    if (s.isBody()) go = false;
     s.isGrowthItem();
     s.isPoisonItem();
-    s.isGate();//////////////////////////////////
+    s.isWall();
+    s.isGate();
 
-    m.isMissoncomplete(ms,snSize, growItems,poisonItems,gates);
-
+    m.isMissoncomplete(ms,snSize, growItems,poisonItems,gates);//미션 성공인지
 
     s.printsnake();
     State_board();
@@ -397,14 +371,20 @@ void run(Snake& s){
 int main()
 {
   Snake snake;
-setlocale(LC_ALL, "");
+  setlocale(LC_ALL, "");
   initscr(); //main window start
-
   resize_term(200, 400);
-  mvprintw(2,15,"Snake Game"); // y,x
   start_color();
-  init_pair(1, COLOR_WHITE, COLOR_BLACK); // 글씨색, 배경색
-  init_pair(2, COLOR_GREEN, COLOR_BLACK);
+  bkgd(COLOR_PAIR(1));
+  mvprintw(2,15,"Snake Game"); // y,x
+  init_pair(1, COLOR_WHITE, COLOR_WHITE);
+  init_pair(2, COLOR_BLACK, COLOR_BLACK);   // 글씨색, 배경색 > 기본 벽
+  init_pair(3, COLOR_BLACK, COLOR_BLACK);
+  init_pair(4, COLOR_YELLOW, COLOR_WHITE);
+  init_pair(5, COLOR_CYAN, COLOR_WHITE);
+  init_pair(6, COLOR_GREEN, COLOR_WHITE);   // growItems
+  init_pair(7, COLOR_RED, COLOR_WHITE);
+  init_pair(8, COLOR_MAGENTA, COLOR_WHITE);
 
   state_board=newwin(7, 40, 3, 53);//서브윈도우 위치설정
   mission_board=newwin(7, 40, 10, 53);
@@ -414,7 +394,6 @@ setlocale(LC_ALL, "");
   noecho();
   curs_set(0);
   run(snake);
-
   nodelay(stdscr, FALSE);
   getch();
   endwin();
