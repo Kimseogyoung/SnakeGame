@@ -7,7 +7,6 @@
 #include <random>
 #include <unistd.h>
 #include <thread>
-#include<algorithm>//copy함수
 
 using namespace std;
 
@@ -29,14 +28,22 @@ int nowMap=0;
 WINDOW *state_board;
 WINDOW *mission_board;
 //////////////////////////////
+void fancy_lighting(){
+  int wow[6][50]={{1,1,1,1,1,1,1,2,1,1,1,2,},
+                  {},
+                  {},
+                  {},
+                  {}}
+}
 void nextStageEffect(int num){
   clear();
   bkgd(COLOR_PAIR(6));
   mvprintw(5,10,"Stage < %d >",num);
-  mvprintw(6,10,"Press any key to start.");
-  refresh();
-  nodelay(stdscr, FALSE);
-  getch();
+  for(int i=5; i>0;i--){
+    mvprintw(6,10,"Start in %d seconds",i);
+    refresh();
+    sleep(1);
+  }
 };
 void gameover(){
   clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL");
