@@ -398,7 +398,7 @@ void run(Snake& s){
 
 int main()
 {
-  Snake snake;
+
   setlocale(LC_ALL, "");
   initscr(); //main window start
   resize_term(200, 400);
@@ -426,6 +426,7 @@ int main()
   stageLevel=1;
   //게임시작
   while(gamerun && stageLevel<=4){
+    Snake snake;
     go=true;
     nextStageEffect(stageLevel);
     //맵 랜덤 결정
@@ -445,7 +446,7 @@ int main()
   if(gamerun==false && stageLevel<=4)//게임오버
     gameover();
   else if(gamerun==false && stageLevel>=5)//성공
-    
+
 
 
   nodelay(stdscr, FALSE);
