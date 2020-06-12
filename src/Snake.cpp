@@ -38,6 +38,10 @@ void nextStageEffect(int num){
   nodelay(stdscr, FALSE);
   getch();
 };
+void gameover(){
+  clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL");
+  nodelay(stdscr, FALSE); getch();
+}
 
 void State_board(){//스코어 보드 프린트함수
 
@@ -367,7 +371,7 @@ void run(Snake& s){
 
           // s.isBody() 임시로 bool return
         if (s.isBody()) { gamerun=false; go = false; }
-        if(s.isWall()) {  gamerun=false; go = false;}
+        if(s.isWall()) { gamerun=false; go = false;}
         s.isGrowthItem();
         s.isPoisonItem();
         s.isGate();
@@ -387,8 +391,7 @@ void run(Snake& s){
     // go == false이면 스테이지 종{}
     if (go == false) {
       t1.join(); t2.join(); t3.join(); t4.join(); t5.join(); //쓰레드 종료 -> 터미널 오류x
-      //clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL");
-    } // 실패화면
+    }
 
 
 }
@@ -440,9 +443,9 @@ int main()
     //clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL");
   }
   if(gamerun==false && stageLevel<=4)//게임오버
-  {   clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL"); }
+    gameover();
   else if(gamerun==false && stageLevel>=5)//성공
-
+    
 
 
   nodelay(stdscr, FALSE);
