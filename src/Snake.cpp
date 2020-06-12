@@ -3,9 +3,11 @@
 #include <ncurses.h>
 #include "map.cpp" // 맵 배열 및 함수 사용 위해 인클루드
 #include "mission.cpp" //미션 클래스
+#include "map_array.cpp"
 #include <random>
 #include <unistd.h>
 #include <thread>
+#include<algorithm>//copy함수
 
 using namespace std;
 
@@ -14,14 +16,28 @@ int snSize=0;
 int growItems=0;
 int poisonItems=0;
 int gates=0;
+
 int maxR = 21;
 int maxC = 40;
-bool go = true;
 
+bool go = true;
+bool gamerun=true;
+
+int stageLevel=1;
+int nowMap=0;
 /////////////////////////////////서브윈도우
 WINDOW *state_board;
 WINDOW *mission_board;
 //////////////////////////////
+void nextStageEffect(int num){
+  clear();
+  bkgd(COLOR_PAIR(6));
+  mvprintw(5,10,"Stage < %d >",num);
+  mvprintw(6,10,"Press any key to start.");
+  refresh();
+  nodelay(stdscr, FALSE);
+  getch();
+};
 
 void State_board(){//스코어 보드 프린트함수
 
@@ -146,10 +162,9 @@ public:
     if(map_array[head->r][head->c]==4){return true;}
     return false;
   }
-  void isWall(){//헤드가 바디에 접촉
-    if(map_array[head->r][head->c]==1){
-      go = false;
-    }
+  bool isWall(){//헤드가 바디에 접촉
+    if(map_array[head->r][head->c]==1){return true;}
+    return false;
   }
   void isGrowthItem(){//헤드가 growthItem접촉
     if(map_array[head->r][head->c]==5){
@@ -333,39 +348,49 @@ void run(Snake& s){
   thread t5(makeGate);
 
 
-  mission m(1);//미션 초기화         &&&&&&&&&&&&&&&&후에 스테이지전환 기능 추가 필요
-  m.set_mission();
-  mission_result ms={0,0,0,0};
+    mission m(stageLevel);//미션 초기화         &&&&&&&&&&&&&&&&후에 스테이지전환 기능 추가 필요
+    m.set_mission();
+    mission_result ms={0,0,0,0};
 
-  nodelay(stdscr, TRUE);
-  while (go){
-    dir = s.dir;
-    while (clock() - s.mvSpan < 300000){
-      key = getch();
-      if (key == KEY_UP) dir = 0;
-      else if (key == KEY_RIGHT) dir = 1;
-      else if (key == KEY_DOWN) dir = 2;
-      else if (key == KEY_LEFT) dir = 3;
+    nodelay(stdscr, TRUE);
+    while (go){
+        dir = s.dir;
+        while (clock() - s.mvSpan < 300000){
+            key = getch();
+            if (key == KEY_UP) dir = 0;
+            else if (key == KEY_RIGHT) dir = 1;
+            else if (key == KEY_DOWN) dir = 2;
+            else if (key == KEY_LEFT) dir = 3;
 
+          }
+          s.move(dir);
+
+          // s.isBody() 임시로 bool return
+        if (s.isBody()) { gamerun=false; go = false; }
+        if(s.isWall()) {  gamerun=false; go = false;}
+        s.isGrowthItem();
+        s.isPoisonItem();
+        s.isGate();
+
+        m.isMissoncomplete(ms,snSize, growItems,poisonItems,gates);//미션 성공인지
+        if(ms.leng==1 && ms.gitem==1 && ms.pitem==1 && ms.gate ==1){//미션 모두 완료
+          go=false;
+          stageLevel++;
+        }
+        s.printsnake();
+        State_board();
+        Mission_board(m,ms);
+
+        s.mvSpan = clock();
+        refresh();
     }
-    s.move(dir);
+    // go == false이면 스테이지 종{}
+    if (go == false) {
+      t1.join(); t2.join(); t3.join(); t4.join(); t5.join(); //쓰레드 종료 -> 터미널 오류x
+      //clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL");
+    } // 실패화면
 
-    // s.isBody() 임시로 bool return
-    if (s.isBody()) go = false;
-    s.isGrowthItem();
-    s.isPoisonItem();
-    s.isWall();
-    s.isGate();
 
-    m.isMissoncomplete(ms,snSize, growItems,poisonItems,gates);//미션 성공인지
-
-    s.printsnake();
-    State_board();
-    Mission_board(m,ms);
-
-    s.mvSpan = clock();
-    refresh();
-  }
 }
 
 int main()
@@ -385,6 +410,7 @@ int main()
   init_pair(6, COLOR_GREEN, COLOR_WHITE);   // growItems
   init_pair(7, COLOR_RED, COLOR_WHITE);
   init_pair(8, COLOR_MAGENTA, COLOR_WHITE);
+  init_pair(9, COLOR_BLACK, COLOR_RED); // 끝났을때 배경
 
   state_board=newwin(7, 40, 3, 53);//서브윈도우 위치설정
   mission_board=newwin(7, 40, 10, 53);
@@ -393,7 +419,32 @@ int main()
   keypad(stdscr, TRUE);
   noecho();
   curs_set(0);
-  run(snake);
+
+  stageLevel=1;
+  //게임시작
+  while(gamerun && stageLevel<=4){
+    go=true;
+    nextStageEffect(stageLevel);
+    //맵 랜덤 결정
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> mapnum(0, 7);
+    nowMap=mapnum(gen);
+
+    //맵 초기화
+    for(int i=0; i<maxR;i++)
+      for(int j=0; j<maxC;j++)
+        map_array[i][j]=mapList[nowMap][i][j];
+
+    run(snake);
+    //clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL");
+  }
+  if(gamerun==false && stageLevel<=4)//게임오버
+  {   clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL"); }
+  else if(gamerun==false && stageLevel>=5)//성공
+
+
+
   nodelay(stdscr, FALSE);
   getch();
   endwin();
