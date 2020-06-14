@@ -82,7 +82,7 @@ int main(){
   resize_term(400, 600);
   start_color();
   bkgd(COLOR_PAIR(1));
-  mvprintw(2,15,"Snake Game"); // y,x
+
   init_pair(1, COLOR_WHITE, COLOR_WHITE);
   init_pair(2, COLOR_BLACK, COLOR_BLACK);   // 글씨색, 배경색 > 기본 벽
   init_pair(3, COLOR_BLACK, COLOR_BLACK);
@@ -102,6 +102,8 @@ int main(){
   keypad(stdscr, TRUE);
   noecho();
   curs_set(0);
+
+  fancy_lighting(1);
 
   stageLevel=1;
   //게임시작
@@ -134,11 +136,12 @@ int main(){
     if (go == false) {
       t1.join(); t2.join(); t3.join(); t4.join(); t5.join(); //쓰레드 종료 -> 터미널 오류x
     }
-    //clear(); bkgd(COLOR_PAIR(9));  mvprintw(10,30,"FAIL");
+
   }
   if(gamerun==false && stageLevel<=4)//게임오버
-    gameover();
+    fancy_lighting(3);
   else if(gamerun==false && stageLevel>=5)//성공
+    fancy_lighting(2);
   nodelay(stdscr, FALSE);
   getch();
   endwin();
