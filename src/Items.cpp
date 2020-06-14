@@ -3,6 +3,7 @@
 using namespace std;
 
 extern bool go;
+extern bool passing;
 // 아이템 개수 - 한번에 나올 수 있는 아이템의 수는 3개 이하
 int itemCnt = 0;
 
@@ -74,8 +75,8 @@ void makeGate(){
   sleep(b(gen));
 
   while(go){
-    uniform_int_distribution<int> r(0, 21); // wall 아닌 부분에서 x좌표 선택
-    uniform_int_distribution<int> c(0, 40); // wall 아닌 부분에서 y좌표 선택
+    uniform_int_distribution<int> r(0, 20); // x좌표 선택
+    uniform_int_distribution<int> c(0, 40); // y좌표 선택
 
     int x1 = r(gen);
     int y1 = c(gen);
@@ -93,11 +94,10 @@ void makeGate(){
       g1.r = x1; g1.c = y1;
       g2.r = x2; g2.c = y2;
       sleep(7);
+      while (passing){continue;}
       map_array[x1][y1] = prev_g1;
       map_array[x2][y2] = prev_g2;
     }
-    // uniform_int_distribution<int> p(5, 7); // 아이템 출현 유지 기간 (11초~15초) 랜덤
-    // sleep(p(gen));
     sleep(b(gen));
   }
 }

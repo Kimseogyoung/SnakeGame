@@ -1,5 +1,4 @@
 #include <iostream>
-#include <time.h>
 #include <ncurses.h>
 #include <random>
 #include <unistd.h>
