@@ -2,6 +2,8 @@
 #include "Snake.h"
 using namespace std;
 
+bool passing = false;
+
 int isEdge(position v){
   if ((v.r == 0) && (v.c < maxC)) return 2;   // UPPER EDGE
   else if ((v.r < maxR) && (v.c == maxC-1)) return 3;   // RIGHT EDGE
@@ -14,7 +16,7 @@ Snake::Snake(){
   head = new Element(10, 10);   // 초기 생성 위치
   dir = 0;
   size = 1;
-  mvSpan = clock();
+  mvSpan = chrono::system_clock::now();
   offset[0].r = -1;   offset[0].c = 0;   // UP
   offset[1].r = 0;   offset[1].c = 1;   // RIGHT
   offset[2].r = 1;   offset[2].c = 0;   // DOWN
@@ -45,7 +47,7 @@ void Snake::addbody(){
     size++;
   }
   // 몸이 길어지는 부분이 벽이거나 게이트라면 멈추기
-  else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 1 || map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 7) go = false;
+  else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 1 || map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 7){gamerun = false; go = false;}
 
   // 몸이 길어지는 부분에 poison 아이템이 있으면
   else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 6) removebody();
@@ -86,14 +88,14 @@ void Snake::isPoisonItem(){//헤드가 poisonitem접촉
     poisonItems++;
   }
 }
-bool Snake::isGate(){//헤드가 gate접촉
+void Snake::isGate(){//헤드가 gate접촉
   if(map_array[head->r][head->c]==7) {
+    passing = true;
     if (head->r == g1.r) passGate(g2);
     else passGate(g1);
     gates++;
-    return true;
   }
-  return false;
+  passing = false;
 }
 
 // 스네이크를 이동시키는 함수

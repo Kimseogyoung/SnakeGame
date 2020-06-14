@@ -1,6 +1,6 @@
 #include <iostream>
 #include <ncurses.h>
-#include <time.h>
+#include <chrono>
 #include "map.h" // 맵 배열 및 함수 사용 위해 인클루드
 #include "position.h"
 #ifndef SNAKE_H
@@ -8,6 +8,7 @@
 
 extern int maxR;
 extern int maxC;
+extern bool gamerun;
 extern bool go;
 extern int growItems;
 extern int poisonItems;
@@ -30,7 +31,7 @@ friend class Snake;
 class Snake{
 private:
   Element* head;   // SLL으로 몸체 구현
-  clock_t mvSpan;
+  std::chrono::system_clock::time_point mvSpan;
   int dir;   // head의 방향
   int size;
   position offset[4];   // 이동에 이용할 이동좌표
@@ -52,7 +53,7 @@ public:
   // 헤드가 poisonItem에 접촉하는 경우
   void isPoisonItem();
   // 헤드가 gate에 접촉하는 경우
-  bool isGate();
+  void isGate();
   // 스네이크 head의 방향을 얻어오는 함수
   int getdir(){return dir;}
   int getSize(){return size;}
