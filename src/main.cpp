@@ -32,34 +32,44 @@ WINDOW *state_board;
 WINDOW *mission_board;
 //////////////////////////////
 
+void checkTime(){
+  while(go){
+    sleep(0.5);
+  }
+}
+
 // nodelay()함수 통해 getch() 딜레이 없앰 + time(NULL) 이용해 시간 제한
 void run(Snake& s){
   int key;
   int dir = s.dir;
 
-  mission m(stageLevel);//미션 초기화         &&&&&&&&&&&&&&&&후에 스테이지전환 기능 추가 필요
+  mission m(stageLevel);//미션 초기화
   m.set_mission();
   mission_result ms={0,0,0,0};
 
   nodelay(stdscr, TRUE);
   while (go){
     dir = s.dir;
-    while (clock() - s.mvSpan < 300000){
+    chrono::duration<double> sp;
+    sp = chrono::system_clock::now()-s.mvSpan;
+    while (sp.count() < 0.5){
       key = getch();
       if (key == KEY_UP) dir = 0;
       else if (key == KEY_RIGHT) dir = 1;
       else if (key == KEY_DOWN) dir = 2;
       else if (key == KEY_LEFT) dir = 3;
-
+      sp = chrono::system_clock::now()-s.mvSpan;
     }
+    //mvprintw(200, 80, "%f", (double)(clock()-s.mvSpan) / CLOCKS_PER_SEC);
     s.move(dir);
 
     // s.isBody() 임시로 bool return
     if (s.isBody()) { gamerun=false; go = false; }
-    if(s.isWall()) { gamerun=false; go = false;}
+    if (s.isWall()) { gamerun=false; go = false;}
     s.isGrowthItem();
     s.isPoisonItem();
     s.isGate();
+    if (s.getSize() < 3){ gamerun=false; go=false;}
 
     m.isMissoncomplete(ms,s.getSize(), growItems,poisonItems,gates);//미션 성공인지
     if(ms.leng==1 && ms.gitem==1 && ms.pitem==1 && ms.gate ==1){//미션 모두 완료
@@ -71,7 +81,7 @@ void run(Snake& s){
     State_board();
     Mission_board(m,ms);
 
-    s.mvSpan = clock();
+    s.mvSpan = chrono::system_clock::now();
     refresh();
   }
 }
@@ -108,7 +118,7 @@ int main(){
   stageLevel=1;
   //게임시작
   while(gamerun && stageLevel<=4){
-    Snake snake = Snake();
+
     go=true;
     nextStageEffect(stageLevel);
     //맵 랜덤 결정
@@ -126,6 +136,9 @@ int main(){
     poisonItems=0;
     gates=0;
     snSize=0;
+    Snake snake = Snake();
+    g1.r = 0; g1.c = 0;
+    g2.r = 0; g2.c = 0;
     thread t1(makeGrowItem);
     thread t2(makePoisonItem);
     thread t3(makeGrowItem);
@@ -136,7 +149,6 @@ int main(){
     if (go == false) {
       t1.join(); t2.join(); t3.join(); t4.join(); t5.join(); //쓰레드 종료 -> 터미널 오류x
     }
-
   }
   if(gamerun==false && stageLevel<=4)//게임오버
     fancy_lighting(3);
