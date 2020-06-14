@@ -114,18 +114,22 @@ int main(){
   curs_set(0);
 
   fancy_lighting(1);
-
+  int mapdata[8]={0};
   stageLevel=1;
   //게임시작
   while(gamerun && stageLevel<=4){
 
     go=true;
     nextStageEffect(stageLevel);
+    
     //맵 랜덤 결정
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<int> mapnum(0, 7);
-    nowMap=mapnum(gen);
+     while(true){
+      random_device rd;
+      mt19937 gen(rd());
+      uniform_int_distribution<int> mapnum(0, 7);
+      nowMap=mapnum(gen);
+      if(mapdata[nowMap]==0) {mapdata[nowMap]=1; break;}
+    }
 
     //맵 초기화
     for(int i=0; i<maxR;i++)
