@@ -13,11 +13,9 @@ extern int snSize;
 extern WINDOW *state_board;
 extern WINDOW *mission_board;
 
-void fancy_lighting();
+void fancy_lighting(int);
 
 void nextStageEffect(int num);
-
-void gameover();
 
 void State_board();
 
