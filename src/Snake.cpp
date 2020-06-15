@@ -107,7 +107,6 @@ void Snake::isGate(){
     else passGate(g1);
     gates++;
   }
-  passing = false;
 }
 
 // 스네이크를 이동시키는 함수
