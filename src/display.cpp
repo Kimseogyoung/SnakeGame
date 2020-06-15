@@ -1,8 +1,7 @@
 #include <iostream>
 #include "display.h"
-#include<clocale>
 
-void fancy_lighting(int n){//n==1일때 tatle n=2일때 all clear  n=3일때 fail
+void fancy_lighting(int n){   // n==1일때 title n=2일때 all clear n=3일때 fail
 
   clear();
   int col=0;
@@ -30,7 +29,8 @@ void fancy_lighting(int n){//n==1일때 tatle n=2일때 all clear  n=3일때 fai
      {1,1,1,1,1,2,0,0,1,1,1,1,1,1,1,4,0,1,1,4,0,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0},
      {1,1,3,5,5,6,0,0,1,1,3,5,5,1,1,4,0,1,1,4,0,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0},
      {1,1,4,0,0,0,0,0,1,1,4,0,0,1,1,4,0,1,1,4,0,1,1,1,1,1,1,1,2,0,1,1,2,0,1,1,2},
-     {7,5,6,0,0,0,0,0,7,5,6,0,0,7,5,6,0,7,5,6,0,7,5,5,5,5,5,5,6,0,7,5,6,0,7,5,6}}};
+     {7,5,6,0,0,0,0,0,7,5,6,0,0,7,5,6,0,7,5,6,0,7,5,5,5,5,5,5,6,0,7,5,6,0,7,5,6}},
+   };
 
   for(int j=0; j<col;j++){
     for(int i=0; i<6; i++){
@@ -71,7 +71,7 @@ void fancy_lighting(int n){//n==1일때 tatle n=2일때 all clear  n=3일때 fai
   else if(n==2)
     mvprintw(12,65,"Press any key to exit.");
   else if(n==3)
-    mvprintw(12,15,"Press any key to start.");
+    mvprintw(12,15,"Press any key to exit.");
   nodelay(stdscr, FALSE);
   getch();
 }
@@ -85,11 +85,9 @@ void nextStageEffect(int num){
     refresh();
     sleep(1);
   }
-
 }
 
-void State_board(){//스코어 보드 프린트함수
-  //WINDOW *state_board=newwin(7, 40, 3, 53);
+void State_board(){   // 스코어 보드 프린트함수
   wborder(state_board,'|','|','-','-','+','+','+','+');
 
   mvwprintw(state_board , 1, 1, "State board");
@@ -97,13 +95,13 @@ void State_board(){//스코어 보드 프린트함수
   mvwprintw(state_board , 3, 1, "growthItems : %d",growItems);
   mvwprintw(state_board , 4, 1, "poisonItems : %d",poisonItems);
   mvwprintw(state_board , 5, 1, "gates : %d",gates);
-  mvwprintw(state_board , 5, 1, "time : %d",0);
+  mvwprintw(state_board , 6, 1, "time : %04d",runtime);
 
   //wborder(state_board,"\u2500","\u2500","\u2502","\u2502","\u250C","\u2510","\u2514","\u2518");
   wrefresh(state_board);
 }
 
-void Mission_board(mission m, mission_result p){//미션보드
+void Mission_board(mission m, mission_result p){   // 미션보드
   wborder(mission_board,'|','|','-','-','+','+','+','+');
 
   mvwprintw(mission_board , 1, 1, "Mission_board");
@@ -112,6 +110,7 @@ void Mission_board(mission m, mission_result p){//미션보드
   if(m.getLock()) mvwprintw(mission_board, 4, 1, "mission 3 : poisonItem <= %d (%d)",m.getpItem(),p.pitem);
   else mvwprintw(mission_board, 4, 1, "mission 3 : poisonItem >= %d (%d)",m.getpItem(),p.pitem);
   mvwprintw(mission_board, 5, 1, "mission 4 : gate >= %d (%d)",m.getGate(),p.gate);
+  mvwprintw(mission_board, 6, 1, "mission 5 : time >= %d (%d)",m.getTime(),p.runtime);
 
   wrefresh(mission_board);
 }

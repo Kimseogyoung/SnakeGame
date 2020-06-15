@@ -4,15 +4,28 @@
 #include <unistd.h>
 #include <thread>
 #include "position.h"
-#include "map.h" // 맵 배열 및 함수 사용 위해 인클루드
+#include "map.h"
 #ifndef ITEMS_H
 #define ITEMS_H
 
 extern position g1;
 extern position g2;
-// extern int map_array[21][40];
+
 // 아이템 생성 및 소멸 함수
+
+/**
+* @brief grow Item 생성 및 관리
+* @author
+*/
 void makeGrowItem();
+/**
+* @brief poison Item 생성 및 관리
+* @author
+*/
 void makePoisonItem();
+/**
+* @brief gate 생성 및 관리
+* @author 
+*/
 void makeGate();
 #endif
