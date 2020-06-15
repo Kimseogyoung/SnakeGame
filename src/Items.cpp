@@ -3,6 +3,7 @@
 using namespace std;
 
 extern bool go;
+extern bool passing;
 // 아이템 개수 - 한번에 나올 수 있는 아이템의 수는 3개 이하
 int itemCnt = 0;
 
@@ -96,7 +97,8 @@ void makeGate(){
       g1.r = x1; g1.c = y1;
       g2.r = x2; g2.c = y2;
       uniform_int_distribution<int> p(11, 15);
-      sleep(p(gen))
+      sleep(p(gen));
+      while (passing){continue;}
       map_array[x1][y1] = prev_g1;
       map_array[x2][y2] = prev_g2;
     }
