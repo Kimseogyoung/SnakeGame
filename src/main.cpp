@@ -80,10 +80,12 @@ void run(Snake& s){
     s.isPoisonItem();
     s.isGate();
     if (s.getSize() < 3){ gamerun=false; go=false;}
+    if(gamerun==false){mvprintw(20,54,"Your snake is dead. Loading fail screen...",stageLevel);}
 
     m.isMissoncomplete(ms,s.getSize(), growItems,poisonItems,gates,runtime);   // 미션 성공 여부 체크
     if(ms.leng==1 && ms.gitem==1 && ms.pitem==1 && ms.gate ==1 && ms.runtime==1){   //미션 모두 완료 시
       go=false;
+      mvprintw(20,54,"stage %d clear. Loading....",stageLevel);
       stageLevel++;
     }
 
@@ -109,6 +111,7 @@ int main(){
   resize_term(400, 600);
   start_color();
   bkgd(COLOR_PAIR(1));
+  init_color(COLOR_WHITE, 1000, 1000, 1000);
 
   init_pair(1, COLOR_WHITE, COLOR_WHITE);
   init_pair(2, COLOR_BLACK, COLOR_BLACK);   // 글씨색, 배경색 > 기본 벽
@@ -132,6 +135,7 @@ int main(){
 
   // 프로그램 시작 화면 출력
   fancy_lighting(1);
+  int mapdata[8]={0};
   stageLevel=1;
 
   // 게임시작
@@ -139,10 +143,13 @@ int main(){
     go=true;
     nextStageEffect(stageLevel);
     // 맵 랜덤 결정
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<int> mapnum(0, 7);
-    nowMap=mapnum(gen);
+    while(true){
+      random_device rd;
+      mt19937 gen(rd());
+      uniform_int_distribution<int> mapnum(0, 7);
+      nowMap=mapnum(gen);
+      if(mapdata[nowMap]==0) {mapdata[nowMap]=1; break;}
+    }
     // 맵 초기화
     for(int i=0; i<maxR;i++)
       for(int j=0; j<maxC;j++)
@@ -169,7 +176,7 @@ int main(){
   }
   if(gamerun==false && stageLevel<=4)   // 게임 오버
     fancy_lighting(3);
-  else if(gamerun==false && stageLevel>=5)   // 성공
+  else if(stageLevel>=5)   // 성공
     fancy_lighting(2);
 
   nodelay(stdscr, FALSE);
