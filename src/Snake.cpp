@@ -103,7 +103,6 @@ void Snake::isPoisonItem(){
 // 헤드가 gate에 접촉
 void Snake::isGate(){
   if(map_array[head->r][head->c]==7) {
-    passing = true;
     if (head->r == g1.r) passGate(g2);
     else passGate(g1);
     gates++;
