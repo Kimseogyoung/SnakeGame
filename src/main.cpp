@@ -70,10 +70,13 @@ void run(Snake& s){
     s.isPoisonItem();
     s.isGate();
     if (s.getSize() < 3){ gamerun=false; go=false;}
+    if(gamerun==false){mvprintw(20,54,"Your snake is dead. Loading fail screen...",stageLevel);}
+
 
     m.isMissoncomplete(ms,s.getSize(), growItems,poisonItems,gates);//미션 성공인지
     if(ms.leng==1 && ms.gitem==1 && ms.pitem==1 && ms.gate ==1){//미션 모두 완료
       go=false;
+      mvprintw(20,54,"stage %d clear. Loading....",stageLevel);
       stageLevel++;
     }
     s.printsnake();
@@ -92,7 +95,8 @@ int main(){
   resize_term(400, 600);
   start_color();
   bkgd(COLOR_PAIR(1));
-
+  init_color(COLOR_WHITE, 1000, 1000, 1000);//흰색 정의
+  
   init_pair(1, COLOR_WHITE, COLOR_WHITE);
   init_pair(2, COLOR_BLACK, COLOR_BLACK);   // 글씨색, 배경색 > 기본 벽
   init_pair(3, COLOR_BLACK, COLOR_BLACK);
@@ -156,7 +160,7 @@ int main(){
   }
   if(gamerun==false && stageLevel<=4)//게임오버
     fancy_lighting(3);
-  else if(gamerun==false && stageLevel>=5)//성공
+  else if(stageLevel>=5)//성공
     fancy_lighting(2);
   nodelay(stdscr, FALSE);
   getch();
