@@ -13,15 +13,17 @@ int isEdge(position v){
 
 Snake::Snake(){
   head = new Element(10, 10);   // 초기 생성 위치
+  head->next = new Element(11, 10);
+  head->next->next=new Element(12, 10);
   dir = 0;
-  size = 1;
+  size = 3;
   mvSpan = chrono::system_clock::now();
   offset[0].r = -1;   offset[0].c = 0;   // UP
   offset[1].r = 0;   offset[1].c = 1;   // RIGHT
   offset[2].r = 1;   offset[2].c = 0;   // DOWN
   offset[3].r = 0;   offset[3].c = -1;   // LEFT
-  addbody();
-  addbody();
+
+
 }
 
 Snake::~Snake(){
@@ -45,21 +47,26 @@ void Snake::printsnake(){
 
 // 스네이크 몸길이 1증가
 void Snake::addbody(){
-  Element* p=head;
+
+  Element *p, *q;
+  p=head;
   while(p->next){
+    q=p;
     p=p->next;
   }
-  if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 0){
-    Element* tmp = new Element( p->r - offset[dir].r, p->c - offset[dir].c);
+  int newbodyr=(p->r)+(p->r - q->r);
+  int newbodyc=(p->c)+(p->c - q->c);
+  if (map_array[newbodyr][newbodyc] == 0){
+    Element* tmp = new Element( newbodyr, newbodyc);
     p->next=tmp;
     size++;
   }
   // 몸이 길어지는 부분이 벽이거나 게이트라면 멈추기
-  else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 1 || map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 7){gamerun = false; go = false;}
+  else if (map_array[newbodyr][newbodyc] == 1 || map_array[newbodyr][newbodyc] == 7){gamerun = false; go = false;}
 
   // 몸이 길어지는 부분에 poison 아이템이 있으면
-  else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 6) removebody();
-  else if (map_array[p->r - offset[dir].r][p->c - offset[dir].c] == 5) addbody();
+  else if (map_array[newbodyr][newbodyc] == 6) removebody();
+  else if (map_array[newbodyr][newbodyc] == 5) addbody();
 }
 
 // 스네이크 몸길이 1 감소 (꼬리부)
