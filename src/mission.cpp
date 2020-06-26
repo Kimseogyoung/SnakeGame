@@ -7,34 +7,34 @@ void mission::set_mission(){
   switch (level) {
     case 1:
       leng=5;
-      gitem=3;
+      gitem=5;
       pitem=1;
       gate=1;
-      runtime=20;
-      lock=false;
-      break;
-    case 2:
-      leng=5;
-      gitem=4;
-      pitem=2;
-      gate=2;
       runtime=30;
       lock=false;
       break;
+    case 2:
+      leng=7;
+      gitem=7;
+      pitem=3;
+      gate=3;
+      runtime=50;
+      lock=false;
+      break;
    case 3:
-     leng=7;
-     gitem=5;
-     pitem=3;
-     gate=2;
-     runtime=40;
+     leng=15;
+     gitem=10;
+     pitem=2;
+     gate=5;
+     runtime=70;
      lock=true;
      break;
   case 4:
-    leng=8;
-    gitem=6;
-    pitem=3;
-    gate=3;
-    runtime=50;
+    leng=15;
+    gitem=10;
+    pitem=0;
+    gate=10;
+    runtime=90;
     lock=true;
     break;
   }

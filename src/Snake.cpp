@@ -22,8 +22,6 @@ Snake::Snake(){
   offset[1].r = 0;   offset[1].c = 1;   // RIGHT
   offset[2].r = 1;   offset[2].c = 0;   // DOWN
   offset[3].r = 0;   offset[3].c = -1;   // LEFT
-
-
 }
 
 Snake::~Snake(){

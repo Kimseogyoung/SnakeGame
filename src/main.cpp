@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include "mission.h"
 #include "display.h"
 #include "Snake.h"
@@ -35,7 +36,7 @@ WINDOW *mission_board;
 
 /**
 * @brief 게임 진행 시간 기록
-* @author 이소영
+* @author 이소영(100%)
 */
 void checkTime(){
   chrono::system_clock::time_point start = chrono::system_clock::now();
@@ -48,7 +49,7 @@ void checkTime(){
 /**
 * @brief 게임 진행 시 Snake의 움직임 제어 및 미션 보드와 스코어 보드 내용 업데이트 및 출력
 * @param Snake& s
-* @author 김서경 %, 이소영 %, 이아연 %
+* @author 이소영(40%), 김서경(30%), 이아연(30%)
 */
 void run(Snake& s){
   int key;
@@ -102,7 +103,7 @@ void run(Snake& s){
 
 /**
 * @brief 게임 전체 제어
-* @author 김서경 %, 이소영 %, 이아연 %
+* @author 이아연 (50%), 김서경(40%), 이소영(10%)
 */
 int main(){
   // 셋업
@@ -119,7 +120,7 @@ int main(){
   init_pair(4, COLOR_YELLOW, COLOR_WHITE);   // Snake Head
   init_pair(5, COLOR_CYAN, COLOR_WHITE);   // Snake Body
   init_pair(6, COLOR_GREEN, COLOR_WHITE);   // grow Items
-  init_pair(7, COLOR_RED, COLOR_WHITE);   // posion Items
+  init_pair(7, COLOR_RED, COLOR_WHITE);   // poison Items
   init_pair(8, COLOR_MAGENTA, COLOR_WHITE);   // gate
   init_pair(9, COLOR_BLACK, COLOR_RED); // 끝났을때 배경
 

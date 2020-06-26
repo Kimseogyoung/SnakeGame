@@ -1,13 +1,14 @@
 #include <ncurses.h>
 #include <iostream>
-#include <clocale>
+#include <locale.h>
 #ifndef MISSION_H
 #define MISSION_H
 
 /**
-* @brief
-* @author
+* 파일 전체
+* @author 김서경(100%)
 */
+
 struct mission_result{
   int leng;
   int gitem;
@@ -16,10 +17,6 @@ struct mission_result{
   int runtime;
 };
 
-/**
-* @brief
-* @author
-*/
 class mission{
 private:
   int level=0;
@@ -31,58 +28,14 @@ private:
   bool lock;
 
 public:
-  /**
-  * @brief
-  * @author
-  */
   mission(int lv);
-
-  /**
-  * @brief
-  * @author
-  */
   int getLeng(){return leng;}
-
-  /**
-  * @brief
-  * @author
-  */
   int getgItem(){return gitem;}
-
-  /**
-  * @brief
-  * @author
-  */
   int getpItem(){return pitem;}
-
-  /**
-  * @brief
-  * @author
-  */
   int getGate(){return gate;}
-
-  /**
-  * @brief
-  * @author
-  */
   int getTime(){return runtime;}
-
-  /**
-  * @brief
-  * @author
-  */
   bool getLock(){return lock;}
-
-  /**
-  * @brief
-  * @author
-  */
   void set_mission();
-
-  /**
-  * @brief
-  * @author
-  */
   void isMissoncomplete(mission_result &p,int l,int gi, int pi, int gt, int rt);
 };
 #endif

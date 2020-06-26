@@ -15,17 +15,17 @@ extern position g2;
 
 /**
 * @brief grow Item 생성 및 관리
-* @author
+* @author 이아연(100%)
 */
 void makeGrowItem();
 /**
 * @brief poison Item 생성 및 관리
-* @author
+* @author 이아연(100%)
 */
 void makePoisonItem();
 /**
 * @brief gate 생성 및 관리
-* @author 
+* @author 이아연(100%)
 */
 void makeGate();
 #endif
