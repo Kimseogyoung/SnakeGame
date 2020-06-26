@@ -21,11 +21,13 @@ ncurses: 6.2
 5단계 수행완료
 
 ## 소스코드 파일별 기여도
-Snake.h, Snake.cpp : 김서경(40%) 이소영(40%) 이아연(20%)
-Items.h, Items.cpp : 이아연(100%)
-map.h, map.cpp : 이아연(50%) 이소영(50%)
-map_array.cpp : 김서경(100%)
-position.h : 이소영(100%)
-display.h, display.cpp : 김서경(90%) 이소영(10%)
-mission.h, mission.cpp : 김서경(100%)
-main.cpp : 김서경(33%) 이소영(33%) 이아연(33%)
+|소스코드|기여자|
+|:--:||:--:|
+|Snake.h, Snake.cpp | 김서경(40%) 이소영(40%) 이아연(20%)|
+|Items.h, Items.cpp | 이아연(100%)|
+|map.h, map.cpp | 이아연(50%) 이소영(50%)|
+|map_array.cpp | 김서경(100%)|
+|position.h | 이소영(100%)|
+|display.h, display.cpp | 김서경(90%) 이소영(10%)|
+|mission.h, mission.cpp | 김서경(100%)|
+|main.cpp | 김서경(33%) 이소영(33%) 이아연(33%)|
